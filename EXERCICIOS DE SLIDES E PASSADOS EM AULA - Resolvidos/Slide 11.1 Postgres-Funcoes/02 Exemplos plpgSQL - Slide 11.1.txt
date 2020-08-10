@@ -1,0 +1,99 @@
+EXEMPLO 01: Tratamento de exceção
+
+create or replace function funcnome1 (cod int)
+returns varchar as $$
+declare nm funcionario.nome%type;						/* Declaração de uma variável com mesmo tipo do atributo nome da tabla funcionario */
+begin
+	select f.nome into nm from funcionario f where f.codigo = cod;		/* Cola o nome da tabela funcionario na variavel nm, caso exista */
+	if not found then							/* Teste para verificar se não existir */
+		raise exception 'Funcionário % não encontrado', cod;		/* Se não existir esse nome no BD exibi mensagem que não existe */
+	end if;
+	return nm;								/* Se existir, irá retornar nome */
+end;
+$$ language plpgsql;
+
+select funcnome1 (4);
+
+**********************************************************************************************************************************************************
+
+EXEMPLO 02: com comentários
+*Elabore uma função que receba um valor como parametro que representa 
+quantidade máxima de funcionarios permitida e verifique a quantidade de 
+funcionário de cada departamento. Caso o departamento tenha mais funcionários
+que o permitido , a função deve exibir uma mensagem. Ao final, a função deve retornar
+a quantidade de departamentos que possuem mais que o valor permitido
+
+create or replace function testefuncao1 (valor int)
+/* Retorna a quantidade de departamentos */
+returns int as $$ 										
+/* Declaração da variável d tipo Tabela departamento; qtde quantidade de cada departamento para teste; cont para contar os departamentos que possuem mas func. que o perimitido*/
+declare d departamento%rowtype; qtde int; cont int = 0;		
+begin
+	/* Varre o for na variavel d(que recebeu departamento) usando o select*/
+	for d in select * from departamento loop
+		/* Atribui quantidade de funcionario no departamento usando o select e a variavel d (onde a tabela departamento foi colada) */
+		select count(f.codigo) into qtde from funcionario f where f.codept = d.codigo;
+		/* Realiza o teste */
+		if (qtde > valor) then
+			/* exiba a mensagem caso seja verdadeiro */
+			raise notice 'O departamento % possui mais funcionarios que o permetido', d.codigo;
+			/* atualiza contador */
+			cont := cont + 1;
+		end if;
+	end loop;
+	return cont;		
+end;
+$$ language plpgsql;
+
+select testefuncao1 (0);
+
+
+************************** Sem comentários ********************************************************************
+create or replace function testefuncao1 (valor int)
+returns int as $$
+declare d departamento%rowtype; qtde int; cont int = 0;
+begin
+	for d in select * from departamento loop
+		select count(f.codigo) into qtde from funcionario f where d.codigo = f.codept;
+		if (qtde > valor) then
+			raise notice 'O departamento % possui mais funcionarios que o permtido!', d.codigo;
+			cont := cont + 1;
+		end if;
+	end loop;
+	return cont;
+end;
+$$ language plpgsql;
+
+select testefuncao1(0);
+
+
+**********************************************************************************************************************************************************
+
+EXEMPLO 03:
+Elabore uma função para atualizar a quantidade de funcionários dos departamentos 
+cuja a quantidade = 0;
+
+alter table departamento add qtdef int;
+
+insert into departamento(qtdef) values
+(0), (0), (0);
+
+create or replace function exemplo3 ()
+returns void as $$
+declare d departamento%rowtype;
+begin
+	for d in select * from departamento loop
+		if (d.qtdef = 0) then
+			update departamento 
+			set qtdef = (select count(f.codigo) from funcionario f where f.codept = d.codigo)
+			where departamento.codigo = d.codigo;
+		end if;
+	end loop;
+	return ;
+end;
+$$ language 'plpgsql';
+
+select exemplo3 ();
+
+**********************************************************************************************************************************************************
+

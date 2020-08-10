@@ -1,0 +1,409 @@
+create table conta
+(
+numero char(5) primary key,
+saldo numeric(2,1) not null,
+nome_agencia char(15) not null,
+foreign key (nome_agencia) references agencia
+(nome)
+)
+
+
+add restrição
+alter table departamento alter column nome
+set not null
+
+
+setar campo como unique
+alter table funcionario add unique(identidade)
+
+
+atributo multivalorado chave composta
+create table telefone(
+codf int not null,
+numtel varchar(15) not null,
+primary key(codf,numtel),
+foreign key(codf) references funcionario(codigo)
+)
+
+
+datafim > datainicial
+alter table projeto add constraint
+projeto_datafim_datainicial check(datafim > datainicial)
+
+
+apagar atributo
+alter table alocacao drop column
+datai
+
+
+adicionar atributo
+alter table alocacao add column
+datai date
+
+
+adicionar atributo com check
+alter table alocacao add qtdHora int not null check(qtdHora > 0);
+
+
+adicionar atributo
+alter table projeto add custo float not null;
+
+
+adicionando chave estrangeira na tabela
+alter table empregado add constraint cargo_fk foreign key(codCargo) references cargo(codigo) on delete set null;
+
+----------------------------------------------------------------
+
+inserção
+
+insert into departamento values (1,'TI'),(2,'Qualidade');
+
+insert into funcionario values (1,'Bruno','222222','1134644646','bruno@gmail.com','1'),
+(2,'Felipe','3333333','5534644646','felipe@gmail.com','1'),
+(3,'Carlos','4444444','6634644646','carlos@gmail.com','1'),
+(4,'Pedro','5555555','7734644646','pedro@gmail.com','2'),
+(5,'Ana','6666666','8834644646','ana@gmail.com','2'),
+(6,'Bia','7777777','9934644646','bia@gmail.com','2');
+
+
+atualizar
+update funcionario set nome='Bruno Moraes' where cpf='1134644646';
+
+update alocacao set qtdhora=30 where codf<>7; //atualizar onde codf for diferente de 7
+
+delete from departamento where codigo=1;
+
+
+
+-------------------------------------------------------------------
+//Consultas
+
+select nome,cpf from funcionario where email like'%@unifei%';
+
+
+select codp from alocacao where codf=1;
+
+
+select codp,codf from alocacao where datai between '01/01/2018' and '01/12/2018';
+
+
+select f.nome, d.nome from funcionario f,departamento d
+where f.coddept=d.codigo;// retorna o nome dos funcionários com os nomes do seus respectivos departamentos
+
+
+Retorne o nome dos funcionários com os nome do
+seus repectivos departamentos
+select f.nome,d.nome from funcionario f,departamento d
+
+
+Retorne o nome do projeto e código dos funcionários
+alocados no projeto
+select p.nome,codf from projeto p,alocacao
+where codp=p.codigo;
+
+
+Retorne o nome do funcionários com seus repectivos
+números de telephone
+select f.nome,t.numtel from funcionario f,telefone t
+where f.codigo=t.codf;
+
+
+Retorne o primeiro nome dos empregados e o nome
+do departamento onde trabalham ordenados pelo
+primeiro nome do empregado (crescente) e nome do
+departamento (descrescente)
+select e.pnome, d.dnome from empregado e,departamento d
+where e.dnumero=d.dnumero
+order by e.pnome asc, d.dnome desc;
+
+
+Retorne o último nome do gerente do departamento RH
+select e.unome from empregado e,departamento d
+where e.dnumero=d.dnumero and ssn=dgerssn;
+
+
+Retorne o nome dos projetos nos quais o funcionario
+com SSN = E00120 trabalhou mais de 5 horas
+select p.pnome from projeto p,trabalha_em t
+where ssn='E2' AND p.pnumero=t.pnumero AND horas>5;
+
+----------------------------------------------------------
+SELECT JOIN
+Retorne o nome do departamento e o
+nome dos seus respectivos
+funcionários incluindo os
+departamentos que não possuem
+funcionário
+select d.nome, f.nome
+from departamento d left join
+funcionario f
+on f.coddept = d.codigo;
+
+
+Retorne o nome do projeto e o código
+dos funcionários alocados incluindo os
+projetos que não possuem
+funcionários alocados
+select p.nome, codf
+from projeto p left join
+alocacao
+on p.codigo = codp;
+
+
+Retorne o nome do funcionário e o nome dos projetos que o funcionário está alocado somente para os 
+funcionários do departamento x
+select f.nome, p.nome
+from funcionario f join alocacao a
+on f.codigo=a.codf join
+projeto p on a.codp=p.codigo
+where f.coddept=2;
+
+
+Retorne o nome do funcionário , o nome do
+departamento e os números dos telefones do funcionário
+somente para os funcionários cujo nome começa com Maria
+select f.nome,d.nome,t.numtel
+from funcionario f join departamento d
+on f.coddept=d.codigo join telefone t
+on t.codf=f.codigo
+where f.nome like='Maria%';
+
+
+Retorne o código do projeto e a
+quantidade de funcionários alocados
+select a.codp,count(a.codf)
+from alocacao a
+group by(a.codp);
+
+
+Retorne a última data de alocação
+select max(datai) from alocacao;
+
+
+Retorne o código dos funcionários e a soma das horas trabalhadas em todos os projetos
+select a.codf,sum(qtdhora)
+from alocacao a
+group by(a.codf)
+
+
+Retorne o nome do funcionário e a soma das horas trabalhadas em todos os projetos
+select f.nome,sum(qtdhora)
+from alocacao a join
+funcionario f on f.codigo=a.codf
+group by(f.nome);
+
+
+Considere a consulta 9, mas retorne somente os
+funcionários com a soma das horas > 40
+
+-------------------------------------------------------
+Consultas com operações
+
+Retorne todos os nomes de empregado
+e/ou dependente
+(select dno from empregado)
+union
+(select nome from dependente)
+
+
+Retorne todos os nomes de empregado
+que não são nomes de dependentes
+(select distinct dno from empregado)
+except
+(select nome from dependente)
+
+
+Retorne todos os nomes de empregado
+que também são nomes de dependentes
+(select distinct dno from empregado)
+intersect
+(select distinct nome from dependente)
+
+------------------------------------------------------
+Consultas - Funções agragadas
+
+Retorne a soma de todas as horas trabalhadas
+select sum (horas)
+from trabalha_em;
+
+
+Retorne a soma de todas as horas trabalhadas por projeto
+select sum (horas)
+from trabalha_em
+group by(pnumero);
+
+
+Retorne a soma de todas as horas trabalhadas por empregado (ssn do empregado)
+select sum (horas)
+from trabalha_em
+group by(ssn);
+
+
+Retorne a soma das horas trabalhadas por empregado (ssn) considerando somente
+aqueles que trabalharam mais de 60 horas
+select sum (horas)
+from trabalha_em
+where horas>60
+group by(ssn);
+
+
+Retorne o valor da quantidade máxima de horas trabalhadas
+select max(horas)
+from trabalha_em;
+
+Retorne o valor da quantidade máxima de horas trabalhadas por empregado
+select max(horas)
+from trabalha_em
+group by(ssn);
+
+
+Retorne o valor da quantidade máxima de horas trabalhadas no projeto de código 1
+select max(horas)
+from trabalha_em
+where pnumero=1;
+
+
+Retorne o nome do funcionário e o nome dos projetos que o funcionário está alocado somente para os 
+funcionários do departamento x
+select f.nome, p.nome
+from funcionario f join alocacao a
+on f.codigo=a.codf join
+projeto p on a.codp=p.codigo
+where f.coddept=2;
+
+--------------------------------------------------------------------------------
+Lista 6
+1
+
+Retornar o nome e o CGCJ de todos os clientes que possuem o número entre 45 e 162
+select nome,cgcj from cliente
+where no_cliente > 45 and no_cliente < 162;
+
+
+Retornar os dados de todos os desenvolvedores cujo o custo é maior que 5500
+select *from desenvolvedor
+where custo > 5500;
+
+
+Retornar os dados das alocações (código do desenvolvedor, de e até) do projeto de
+id = 101
+select coddev,datai,dataf from alocacao
+where idprojeto > 101;
+
+
+Retornar o nome do projeto e os dados das alocações (id do desenvolvedor, de e
+até) do projeto de id = 101
+select p.nome,a.coddev,a.datai,a.dataf
+from projeto p join alocacao a
+on p.id = a.idprojeto
+where p.id = 101;
+
+
+Retornar os dados das alocações (id do projeto, de e até) dos desenvolvedores cujo
+custo é maior que 2500
+select a.idprojeto,a.datai,a.dataf
+from desenvolvedor d join alocacao a
+on d.codigo = a.coddev
+where d.custo > 2500;
+
+
+Retornar o nome do projeto, os dados das alocações (de e até) e o nome dos
+desenvolvedores de todos os desenvolvedores cujo custo é maior que 2500
+select p.nome,a.datai,a.dataf,d.nome
+from desenvolvedor d join alocacao a
+on d.codigo = a.coddev
+join projeto p on p.id=a.idprojeto
+where d.custo > 2500;
+
+
+2
+Retorne o nome e o login de todos os jogadores
+select nome,login from jogador;
+
+
+Retorne o nome e o login de todos os jogadores com sobrenome Souza
+select nome,login from jogador
+where nome like '%souza%';
+
+
+Retorne o código do caso da negociação e o nome dos papeis incluindo as
+negociações que ainda não tem papeis definidos
+select n.codigo,p.nome
+from negociacao n left join
+papel p
+on p.codc=n.codigo;
+
+
+Retorne a data de início, data finalização (se houver) e o status de todas as
+negociações nas quais o atributo “prazo de garantia” foi negociado
+select n.datai,n.dataf,n.status
+from negociacao n join
+atributo a
+on a.codigo=n.coda
+where a.nome='prazo de garantia';
+
+
+***Retorne o nome do jogador, o título do caso e o nome do papel de as negociações
+que estão em andamento
+select j.nome,c.titulo,p.nome
+from negociacao n join
+jogador j
+on n.codj=j.codigo join
+caso c
+on n.codcaso=c.codigo join
+papel p
+on p.codc=c.codigo;
+
+
+Retorne a quantidade de anotações por jogador
+select count(*) from anotacao
+group by(codj);
+
+
+Retorne a quantidade de anotações por nome do jogador
+select j.nome,count(*)
+from anotacao a join
+jogador j
+on j.codigo=a.codj
+group by(j.nome);
+
+
+***Retorne a quantidade de anotações por nome do jogador considerando somente
+aqueles que possuem mais de 3 anotações com grau de importância maior que 3
+select j.nome,count(*)
+from anotacao a join
+jogador j
+on j.codigo=a.codj
+group by(j.nome);
+
+
+Retorne o código da negociação, a data de inicio, o nome dos jogadores
+associados, o status, o nome dos atributos negociados e seus respectivos valores
+para todas as negociações que começaram a partir do dia 01/03/2014
+select n.codigo,n.datai,j.nome,n.status,a.nome
+from negociacao n join
+jogador j
+on j.codigo=n.codj join
+atributo a
+on n.coda=a.codigo
+where n.datai='2014-03-01';
+
+
+Retorne a quantidade de negociações de cada atributo cadastrado. No resultado,
+deve aparecer o nome do atributo
+select a.nome,count(*)
+from negociacao n join
+atributo a
+on n.coda=a.codigo
+group by(a.nome);
+
+
+Retorne o valor máximo negociado do atributo preço
+
+
+
+----------------------------------------------------------------------------------
+
+
+
+

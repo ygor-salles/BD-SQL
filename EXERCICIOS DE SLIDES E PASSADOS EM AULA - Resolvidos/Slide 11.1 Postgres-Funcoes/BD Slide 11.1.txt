@@ -1,0 +1,54 @@
+
+create table departamento (
+	codigo int primary key,
+	nome varchar(50)
+)
+
+create table funcionario (
+	codigo int primary key,
+	nome varchar(50),
+	codept int,
+	salario float,
+		foreign key (codept) references departamento(codigo)
+)
+
+create table projeto (
+	codigo int primary key,
+	nome varchar(50),
+	descricao varchar(150),
+	datai date,
+	dataf date
+)
+
+create table alocacao (
+	codf int,
+	codp int,
+	horas float,
+	datai date,
+		primary key (codf, codp),
+			foreign key (codp) references projeto(codigo),
+			foreign key (codf) references funcionario(codigo)
+)
+
+insert into departamento values
+(1, 'departamento1'),
+(2, 'departamento2'),
+(3, 'departamento3')
+
+insert into funcionario values
+(1, 'funcionario1', 2, 1000),
+(2, 'funcionario2', 2, 1000),
+(3, 'funcionario3', 3, 2000),
+(4, 'funcionario4', 2, 3000)
+
+insert into projeto values
+(1, 'projeto1', 'descricao1', '2018-02-02', '2018-03-05'),
+(2, 'projeto2', 'descricao2', '2018-01-02', '2018-03-04'),
+(3, 'projeto3', 'descricao3', '2018-04-02', '2018-09-02')
+
+insert into alocacao values
+(2, 1, 26, '2018-02-02'),
+(1, 2, 20, '2018-01-02'),
+(3, 1, 18, '2018-04-02'),
+(2, 3, 14, '2018-05-02')
+

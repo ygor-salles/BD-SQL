@@ -1,0 +1,103 @@
+
+/* Slide 12.1 - EXEMPLOS */
+
+create table departamento (
+	codigo int primary key,
+	nome varchar(50),
+	qtdef int
+)
+
+create table funcionario (
+	codigo int primary key,
+	nome varchar(50),
+	dept int,
+	salario float,
+		foreign key (dept) references departamento(codigo)
+		
+)
+
+create table projeto (
+	codigo int primary key,
+	nome varchar(50)
+)
+
+create table alocacao (
+	codf int,
+	codp int,
+	horas float,
+		primary key (codf, codp),
+			foreign key (codp) references projeto(codigo),
+			foreign key (codf) references funcionario(codigo)
+)
+
+/* Inserção de elementos */
+insert into departamento values
+(1, 'departamento1', 10),
+(2, 'departamento2', 20),
+(3, 'departamento3', 30)
+
+insert into funcionario values
+(1, 'funcionario1', 2, 1000),
+(2, 'funcionario2', 2, 1000),
+(3, 'funcionario3', 3, 2000),
+(4, 'funcionario4', 2, 3000)
+
+EXEMPLO 1:
+
+alter table projeto add total_horas float;
+
+/* Inicializar as tuplas com zero */
+insert into projeto values
+(1, 'projeto1', 0),
+(2, 'projeto2', 0),
+(3, 'projeto3', 0)
+
+select * from projeto;
+/* ********************************* */
+
+create or replace function exemplo1()
+returns trigger as $$
+begin
+update projeto
+set total_horas = total_horas + NEW.horas
+where codigo = NEW.codp;
+return null;
+end;
+$$ language 'plpgsql';
+
+create trigger tr_exemplo1
+after insert on alocacao
+for each row
+execute procedure exemplo1();
+
+insert into alocacao values
+(2, 1, 26),
+(1, 2, 20),
+(3, 1, 18),
+(2, 3, 14)
+
+select * from projeto
+
+/* ****************************************** */
+/* Realizar inserção e remoção em uma só função */
+
+create or replace function alteraqtde()
+returns trigger as $$
+begin 
+	if(tg_op = 'INSERT') then
+		update departamento set qtdef = qtdef + 1 where codigo = new.dept;
+	elseif (tg_op = 'DELETE') then
+		update departamento set qtdef = qtdef - 1 where codigo = old.dept;
+	elseif ((tg_op = 'UPDATE') and (old.dept != new.dept)) then
+		update departamento set qtdef = qtdef - 1 where codigo = old.dept;
+		update departamento set qtdef = qtdef + 1 where codigo = new.dept;
+	return null;
+end;
+$$ language 'plpgsql';
+
+create trigger tr_alteraqtde
+after insert or delete or update on funcionario
+for each row
+execute procedure alteraqtde;
+
+

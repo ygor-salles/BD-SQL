@@ -1,0 +1,100 @@
+A. Retorne os nomes dos alunos, os códigos das disciplinas que estão matriculados, o número
+da turma e o status da matricula do aluno
+
+SELECT a.nome, t.codigodisciplina, t.numero, m.status
+FROM aluno a, turma t, matricul m
+WHERE a.cpf = m.cpfaluno AND m.numeroturma = t.numero
+
+B. Retorne os nomes dos alunos com os códigos das disciplinas, incluindo aqueles alunos que
+não estão matriculados em disciplinas.
+
+SELECT a.nome, t.codigodisciplina
+FROM aluno a, turma t, matricul m
+WHERE a.cpf = m.cpfaluno AND m.numeroturma = t.numero
+
+C.Retorne os códigos das disciplinas, o nome da disciplina, o nome do professor responsável
+(regente), o número da prova(s) (caso exista) e o valor da prova(s) para todas as provas
+cadastradas.
+
+SELECT d.codigo, d.nome, d.cpfprofessor, p.numero, p.valor
+FROM disciplina j JOIN prova p
+ON d.codigo = p.codigo
+
+D.Retorne a quantidade de prova por disciplina (código)
+
+SELECT count(p.codigodisciplina)
+FROM prova p
+
+E.Retorne a quantidade de provas das disciplinas do professor João da Silva Matos
+
+SELECT count(p.codigodisciplina)
+FROM prova p
+WHERE p.cpfprofessor = (SELECT p.cpf 
+FROM professor p JOIN disciplina d
+ON d.cpfprofessor = p.cpf
+WHERE p.nome = 'João da Silva Matos')
+GROUP BY p.codigodisciplina
+
+F.Retorne a quantidade de provas das disciplinas do professor João da Silva Matos somente
+para aquelas disciplinas que possuem mais de 2 provas
+
+SELECT count(p.codigodisciplina)
+FROM prova p
+WHERE p.cpfprofessor = (SELECT p.cpf 
+FROM professor p JOIN disciplina d
+ON d.cpfprofessor = p.cpf
+WHERE p.nome = 'João da Silva Matos')
+GROUP BY p.codigodisciplina
+HAVING count(p.codigodisciplina) > 2
+
+G.Retorne o código, nome do professor e nome e das disciplinas que possuem turma cujo
+horário é noturno (hora maior que 19)
+
+SELECT p.nome, t.codigodisciplina, d.nome
+FROM professor p, turma t, disciplina d
+WHERE t.cpfprofessor = p.cpf AND t.codigodisciplina = d.codigo AND t.horario > 19
+
+H.Retorne a quantidade de turmas das disciplinas cujo horário é noturno (hora maior que 19)
+
+SELECT COUNT(t.codigodisciplina)
+FROM turma t
+WHERE t.horario > 19
+GROUP BY t.codigodisciplina
+
+I.Retorne a quantidade de turmas das disciplinas cujo horário é noturno (hora maior que 19)
+somente para as disciplinas que possuem mais de 4 turmas.
+
+SELECT COUNT(t.codigodisciplina)
+FROM turma t
+WHERE t.horario > 19
+GROUP BY t.codigodisciplina
+HAVING COUNT(t.codigodisciplina) > 4
+
+J. Suponha que existam alunos que são professores (use sub-consultas):
+
+SELECT a.cpf
+FROM aluno a
+WHERE a.cpf IN (SELECT p.cpf
+FROM professor p)
+
+K.Retorne o nome das pessoas que são alunos e professores
+
+(SELECT a.cpf FROM aluno a)
+UNION
+(SELECT p.cpf FROM professor p)
+
+L. Retorne o nome das pessoas que são alunos e/ou professores.
+
+(SELECT a.cpf FROM aluno a)
+INTERSECT
+(SELECT p.cpf FROM professor p)
+
+M. Retorne o nome das pessoas que são alunos e não são professores.
+
+(SELECT DISTINCT a.cpf FROM aluno a)
+UNION
+(SELECT DISTINCT p.cpf FROM professor p)
+
+(SELECT DISTINCT a.cpf FROM aluno a)
+EXCEPT
+(SELECT p.cpf FROM professor p)

@@ -1,0 +1,103 @@
+* CAIXAS CHEIAS SÃO CHAVES PRIMÁRIAS*
+
+professor(MATRICULA, nome, titulacao)
+disciplina(CODIGO, nome, descricao)
+turma(MATRICULAP, CODIGOD, SEMESTRE) 
+
+**************************************************************************************************
+PROCEDIMENTO
+* Dado a matricula do professor, calcule a quantidade de turmas do mesmo:
+
+create procedure proc_contagem_turma (in mat_prof int, out contagem_t int)
+begin
+	select count(*) into contagem_t
+	from turma t
+	where t.matriculap = proc_contagem_turma.mat_prof
+end;
+
+
+**************************************************************************************************
+FUNÇÃO RETORNA VALOR
+* Dado a matricula do professor, retorne a quantidade de turmas do mesmo:
+
+create function contagem_turma (mat_prof int)
+returns int
+begin
+	declare contagem_t int;
+	select count(*) into contagem_t
+	from turma t
+	where t.matriculap = contagem_turma.mat_prof
+	return contagem_t;
+end;
+
+* Quais os nomes e a titulação de todos os professorees com mais de uma turma
+
+select nome, titulacao
+from professor
+where contagem_turma(matriculap) > 1
+
+
+**************************************************************************************************
+FUNÇÃO RETORNA TABELA
+*Retorne a tabela com a disciplina e o semestre de todas as turmas que o professor possui
+
+create function turmas_de (mat_prof int)
+returns table(disciplina int, semestre int)
+return table 
+(select codigod, semestre
+from turma
+where matriculap = mat_prof)
+
+select * from table(turmas_de(11100))
+
+**************************************************************************************************
+EXEMPLO 1
+1- Criar procedimento para retornar os dados dos professores por matrícula (op=1)
+ou por nome(op=2) ou por titulação (op=3)
+
+create procedure select_professor (in op int, in mat int, in nm varchar(100), in tit varchar(20))
+begin
+	if (op=1) then
+		select * from professor where matricula = mat
+	else if (op=2) then
+		select * from professore where nome = nm
+	else if (op=3) then
+		select * from professor where titulacao = tit
+end;
+
+**************************************************************************************************
+EXEMPLO 2
+2 - Classique o departamento de acordo com o numero de empregados
+
+create function dep_tamanho (in dnum int)
+returns varchar(7)
+declare numero_emps int
+select count(*) into numero emps
+from empregado 
+where dnumero = dnum;
+if numero_emps > 100 then
+	return "grande"
+else if numero_emps > 10 and numero_emps < 100 then
+	return "medio"
+else 
+	return "pequeno"
+end if
+
+**************************************************************************************************
+EXEMPLO 3
+
+create procedure altera_salario (in mat int)
+declare p professor;
+begin
+	for p as
+		select * from professor
+		where matricula = mat;
+		if p.titulacao = 'DSC' then
+			update professore set.psalario = p.salario * 1,10
+			where p.matricula = mat;
+		else if p.titulacao = 'MSC' then
+			update professor set p.salario = p.salario * 1,20
+			where p.matricula = mat;
+		end if
+	end for;
+end;

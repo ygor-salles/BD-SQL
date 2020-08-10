@@ -1,0 +1,211 @@
+﻿create database banco
+drop database banco
+
+create table tabela (
+		atributo varchar(10) primary key
+		atributo1 int not null unique
+		primary key (atributo)
+		unique (atributo)
+		atributo tipo default 'nome'
+		check (atributo > 0)
+		tipo enum('ouro', 'prata')
+		tipo enum (tipo = 'ouro" or tipo = 'prata')
+		foreign key(atributo) references tabela(atributo1)
+		)
+
+drop table nome
+
+------------------------------- DDL ----------------------------
+
+-- Adicionar Atributo ---
+alter table agencia add telefone varchar(15)
+
+-- Remover Atributo ---
+alter table agencia drop telefone
+
+-- Alterar Nome Atributo ---
+alter table projeto rename column datta to data
+
+-- Alterar Tipo Atributo ---
+alter table agencia alter column telefone set data type varchar(30) not null
+
+-- Adicionar Restrição --- 
+alter table agencia alter telefone set not null
+
+-- Remover Restrição ---
+alter table agencia alter telefone drop not null
+
+-- Adicionar Restrição Padrão SQL ---
+alter table conta add constraint conta_pk primary key(numero)
+alter table dependente add constraint dependente_nome_unique unique(nome)
+alter table conta add constraint conta_saldo_check check(saldo > 0)
+
+--- Apagar Restrição ---
+alter table conta drop constraint nomeRestrição
+
+
+--------------------------- DML ----------------------------
+
+--- Inserção ---
+insert into tabela values('atributo','atributo2')
+
+Para insertir mais de uma tupla, deve-se separar por vírgula
+insert into tabela values('atributo','atributo2'),
+			 ('atributo','atributo2')
+
+--- Exclusão ---
+Deleta todas as tuplas
+delete from tabela
+
+Define quais tuplas serão apagadas
+delete from tabela
+where nome = 'Joao'
+
+Pode-se usar operadores And, Or, Between
+delete from tabela
+where nome = 'Joao' or nome = 'Maria'
+
+--- Alteração ---
+update tabela set nome = 'Flávio'
+
+Atualizar com condição
+update cliente 
+set nome = 'Flávio'
+where id = 10
+
+-------------------------- Consulta ----------------------------
+select atributo
+from tabela
+where predicado
+
+select * = retorna todos os atributos
+select pnome = retorna os nomes com duplicatas
+select distinct pnome = retorna sem as duplicatas
+
+Selecione o número de empregados que tenham o primeiro nome "João" e o último nome "Silva"
+select numero
+from empregado
+where pnome = 'João' and unome = 'Silva'
+
+Selecione o número de empregados em que o último nome não seja "Silva"
+select numero
+from empregado
+where unome <> 'Silva'
+
+--- Operador Between ---
+Selecione o número dos empregados que ganham mais de 1500 e menos de 5000
+select numero
+from empregado
+where salario between 1500 and 5000
+
+--- Strings ---
+% (corresponde a qualquer sequencia substring)
+_ (corresponde a qualquer caractere)
+|| (concatenação)
+upper(string ou atributo)
+lower(string ou atributo)
+		caracteres especiais devem ser usados com o operador 'like'
+select nome
+from empregado
+where nome like 'M%'
+		para utilizar algum caracter especial, usa o escape '\'
+select codigo
+from empregado
+where codigo like 'C\%00%'
+
+--- Ordenação ---
+select nome
+from empregado
+order by pnome
+(desc ou asc)
+
+--- Renomear ---
+select dnome		// Consulta normal
+from departamento
+
+select dnome nome	// Retorna "nome"
+from departamento
+
+select d.dnome		// Utiliza variável de tupla para referenciar as tabelas
+from departamento d 
+
+--- Junção ---
+join é usado para especificar a junção de tabelas na cláusula from 
+
+ao utilizar o Join, usar 'on'
+
+select c.cidade
+from cidade c join depositante d on c.nome_cliente = d.nome_cliente
+where d.numero_conta = 'CT01'
+
+-- Tipos de Join ---
+
+Inner Join - retorna somente tuplas relacionadas
+select c.cidade
+from cidade c inner join depositante d on c.nome_cliente = d.nome_cliente
+where d.numero_conta = 'CT01'
+
+Natural Join - não é necessário especificar o critério de junção, ele compara sozinho os atributos de 
+mesmo nome das tabelas
+select c.cidade
+from cidade c natural join depositante d
+where d.numero_conta = 'CT01'
+
+Left Join - obtém os dados relacionados das duas tabelas, mais os dados não relacionados da esquerda
+select c.cidade
+from cidade c. left join depositante d
+on d.numero_conta = 'CT01'
+
+Right Join - obtém os dados relacionadas das duas tabelas, mais os dados não relacionados da direita
+select c.cidade
+from cidade c right join depositante d 
+on d.numero_conta = 'CT01'
+
+Full Join - todos os dados são retornados, caso não esteja relacionado, retornará como null
+select c.cidade
+from cidade c full join depositante d 
+on d.numero_conta = 'CT01'
+
+--- Operador de Conjunto --
+
+Union - equivalente ao operador lógico OU 
+Intersect - equivalente ao operador lógico E
+Except - a diferença da tabela A para B, A - B 
+
+--- NULL --
+
+SQL permite utilizar o parametro NULL em consultas, refereciando com o IS ou IS NOT 
+
+--- Funções Agregadas ---
+avg - valor médio
+min - valor mínimo
+max - valor máximo
+sum - soma
+count - quantidade de valores
+
+select sum(saldo)
+from conta
+where nome_agencia = 'Centro'
+
+Retorna a quantidade de contas
+select count(*)
+from conta
+
+Retornar nomes distintos, diferentes de cliente
+select count distinct(nome)
+from cliente
+
+--- Agrupamento ---
+Group by permite agrupar tuplas de uma relação considerando determinado atributo e usar Funções
+agregadas utilizando o agrupamento
+
+select nome_agencia, max(saldo)
+from conta
+group by (nome_agencia)
+
+Having é uma cláusula que pode ser usada para restringir uma consulta APENAS em conjunto do Group by
+
+SELECT tipo, SUM(quantidade)
+from produtos
+GROUP BY tipo
+having SUM(quantidade) > 200

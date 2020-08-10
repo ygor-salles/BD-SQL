@@ -1,0 +1,150 @@
+
+UTILIZANDO O POSTGRE SGBD
+FUNÇÃO plpgSQL: além da SQL possui estruturas procedurais (sequencial, if, for, while, ...)
+
+
+CREATE OR REPLACE FUNCTION nome (parametros)
+RETURNS tiporetorno AS $$
+DECLARE;
+BEGIN
+	(...);
+END;
+$$ LANGUAGE 'plpgsql';
+
+
+
+* Atribuição => :=
+
+* Tipos de variáveis => integer, numerica, varchar
+
+* %type => referencia o tipo atributo da tabela (usado sequencial ou if apenas)
+
+* %rowtype=> referencia o tipo tabela (usado para for, while)
+
+* into => atribui a variavel um valor da tupla(%type) ou a todas as tuplas(%rowtype utilizando um for ou while)
+
+* cast(x as real)/y => divisão de inteiros
+
+
+* if ... then ... end if
+* if ... then ... else ... end if
+* if ... then ... elseif ... then ... else ... endif
+
+* if not found then 
+	raise exception 'Tratamento de exceção'
+
+* if (condição) then
+	raise notice ' Printar mensagem '
+
+* WHILE boolean-expression LOPP ... 
+
+* FOR i IN 1..10 LOOP ... END LOOP;
+
+* FOR i IN REVESE 10..1 LOOP ... END LOOP;
+
+* FOR variavel IN consulta LOOP ... END LOOP => percorrendo a tabela do BD 
+
+********************************************************************************
+Exemplo1: sequencial
+
+create or replace function nome (subtotal real, taxa real)
+returns real as $$
+declare total real;
+begin
+	total := subtotal + subtotal * taxa/100;
+	return total;
+end;
+$$ language 'plpgsql';
+
+
+********************************************************************************
+Exemplo 2: Retornar tabela
+
+create or replace function retornatabela ()
+returns table (cod int, nome varchar) as $$
+begin
+	return query select f.codigo, f.nome
+	from funcionario;
+end;
+$$ language 'plpgsql';
+
+
+********************************************************************************
+Exemplo 3: variaveis que referencia o tipo atributo da tabela
+
+create or replace function funcnome (codigo funcionario.codigo%TYPE)
+returns funcionario.nome%TYPE as $$
+declare nm funcionario.nome%TYPE;
+begin
+	select nome into nm 
+	from funcionario f where f.codigo = $1;
+	return nm;
+end;
+
+
+********************************************************************************
+Exemplo 4: utilizando loop para percorrer uma tabela
+
+*Ealbore uma função para atualizar a quantidade de funcionarios dos
+departamentos cuja a quantidade = 0
+
+create or replace function ()
+returns void as $$
+declare d departamento%rowtype; qtde int;
+begin 
+	for d in select * from departamento loop
+		if (d.qtdef = 0) then
+			update departamento
+			set qtdef = (select count(f.codigo) into qtde from funcionario f where f.codept = d.codigo)
+			where departamento.codigo = d.codigo;
+		end if;	
+	end loop;
+	return ;
+	end;
+$$ language 'plpgsql';
+
+
+********************************************************************************
+Exemplo 5: raise notice
+
+*Elabore uma função que receba um valor e faça a seguinte verificação: para cada professor,
+deve ser calculada a quantidade de turmas alocadas, caso a quantidade seja maior que o valor,
+deve ser exibida na tela uma mensagem.
+
+CREATE OR REPLACE FUNCTION vreficaprofessor (max integer)
+RETURNS text as $BODY$
+declare p professor%ROWTYPE; qtde int := 0;
+begin
+	for p in select * from professor
+	loop
+		select count(matriculap) into qtde from turma where matriculap = p.matricula;
+		if qtde > max then
+			raise notice 'O professor % possui mais turmas do que o permitido', p.matricula;
+		end if;
+	end loop;
+end;
+$BODY$ LANGUAGE 'plpgsql';
+
+
+********************************************************************************
+Exemplo 6: raise exception e retorna tabela
+
+CREATE OR REPLACE FUNCTION public.verificaprof(mat_p integer)
+RETURNS SETOF character varying AS $$
+begin
+	return query select d.nome from disciplina d join turma t on t.codigod = d.codigo where t.matriculap = mat_p
+	IF NOT FOUN THEN
+		RAISE EXCEPTION 'professor % não tem turma', mat_p;
+	END IF;
+end;
+$$ LANGUAGE 'plpgsql';
+
+********************************************************************************
+
+OBS: Usa-se o FOR quando: é necessário varrer as linhas da tabela e para cada linha que for verdade
+exibir uma mensagem ou realizar a contagem de uma outra tabela por exemplo. Ou seja realmente seria
+necessário percorrer liha a linha e realizar uma ação para cada uma que for verdade.
+
+Não usa o FOR quando: mesmo que varre as linhas(usando select...) quer apenas que mostre se não existe 
+o valor verdade na tabela (if not found then). Ou seja percorre as linhas com select e caso encontre algo falso 
+da condição where no select, exiba  mensagem.

@@ -1,0 +1,75 @@
+/* SLIDE 12 - Adaptando a versão SQL padrão para o Postgre */
+
+create table professores (
+	matricula int primary key,
+	nome varchar(50),
+	nro_turmas int
+)
+
+create table turmas (
+	disciplina varchar(10),
+	codigo varchar(10),
+	vagas int,
+	professor int,
+	primary key (disciplina, codigo),
+		foreign key (professor) references professores(matricula)
+)
+
+insert into professores values
+(01, 'Maria', 0),
+(02, 'João', 0)
+
+/* TRIGGER padrão SQL */
+create trigger atualiza_nro_turmas 
+after insert on turmas
+for each row
+begin
+	update professores
+	set nro_turmas = nro_turmas + 1
+	where matricula = new.professor;
+	return null;
+end;
+
+/* Criar função de remoção para utilizar no TRIGGER */
+create trigger atualiza_nro_turmas 
+after delete on turmas
+for each row
+begin 
+	update professores
+	set nro_turmas = nro_turmas - 1
+	where matricula = OLD.professor;
+	return null;
+end;
+
+
+/*Insere registros na tabela turmas */
+insert into turmas values 
+('COM230', 'CCO_2017_1', 25, 02)
+
+
+/* Verifica o estado das tabelas depois da inclusao registros na tabela turmas */
+select * from turmas
+select * from professores
+
+-------------->Pode se verificar que o numero de turmas do professor Joao já foi alterado
+
+
+
+
+
+/*****************************************************************************/
+/* Criar um trigger para quando o professor de uma turma for alterado;
+ou seja realizar as duas funções(INSERÇÃO E REMOÇÃO) em uma só. */
+
+create trigger atualiza_nro_turmas
+after update on turmas of professor
+for each row
+begin
+	UPDATE professores 
+	SET nro_turmas = nro_turmas + 1 
+	WHERE matricula = NEW.professor;
+	
+	UPDATE professores 
+	SET nro_turmas = nro_turmas - 1 
+	WHERE matricula = OLD.professor;
+end;

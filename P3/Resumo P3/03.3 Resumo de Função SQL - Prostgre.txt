@@ -1,0 +1,135 @@
+
+UTILIZANDO O POSTGRE SGBD
+FUNÇÃO SQL: não possui estruturas procedurais (if, for, while, ...)
+
+Tipos de retornos:
+*INT, VARCHAR, FLOAT, DOUBLE PRECISION, etc... => retorna valores do tipo definido
+
+*VOID => Função que não retorna valor (usado apenas para UPDATE, INSERT e DELETE que não irá usar o select o returning depois)
+
+*RECORD => Retorna mais de um atributo
+
+*SETOF => Retorna vários registros 
+
+*RETURNING => retorna o valor que foi inserido, deletado ou atualizado (não fica em returns)
+
+*TEXT => retorna texto + vaor(opcional)
+
+*"tabela" => retorna todas as colunas (select * )
+
+Outros operadores de procedure:
+
+*OR REPLACE => permiti alterar os valores utilizados sem mudar a estrutura da função 
+caso seja necessário executar a função mais de uma vez
+
+*IN => parametro de entrada (não obrigatório)
+*OUT => parametro de saida, retorna valor pelo parametro (obrigatório caso utilize)
+
+*******************************************************************************************
+
+Exemplo 1: 
+CREATE FUNCTION exemplo1()
+RETURNS INT AS $$
+	SELECT codigo FROM funcionario
+$$ LANGUAGE SQL;
+
+SELECT exemplo1(); -> executa a função
+
+DROP FUNCTION exemplo1(); -> excluir função
+
+
+-> função retorna um inteiro visto que o codigo que será exibido do select é um int.
+O retorno será apenas do primeiro funcionario cadastrado, para todos é necessário o operador SETOF
+
+*******************************************************************************************
+
+Exemplo 2:
+CREATE OR REPLACE FUNCTION exemplo2(in codp int)
+RETURNS RECORD AS $$
+	SELECT codp, nome FROM funcionario WHERE codp = exemplo2.codp 
+$$ LANGUAGE SQL
+
+
+-> RECORD => permite retornar mais de uma valor na função -> (codp, nome)
+*se o atributo passado como parametro tiver o mesmo nome na clausula where deve colocar o nome da função para não ficar ambíguo
+
+*******************************************************************************************
+
+Exemplo 3:
+CREATE OR REPLACE FUNCTION Exemplo3()
+RETURNS VARCHAR AS $$
+	DELETE FROM funcionario WHERE codigo = $1
+	RETURNING nome
+$$ LANGUAGE SQL
+
+
+-> pode se retornar o valor de qual a operação foi feita com o select ou returning
+-> especificação do codigo na clausula where deve inserir o dólar
+
+*******************************************************************************************
+
+Exemplo 4: 
+CREATE OR REPLACE FUNCTION exemplo4(in cod int, in sal double precision)
+RETUNS TEXT AS $$
+	UPDATE funcionario SET salario = sal WHERE codigo = cod;
+	SELECT 'Novo Salario: ' || salario
+	FROM funcionario WHERE codigo = cod
+$$ LANGUAGE SQL
+
+
+->TEXT => retorna texto, no exemplo: 'Novo Salario: 2000'
+
+*******************************************************************************************
+
+Exemplo 5:
+
+CREATE OR REPLACE FUNCTION exemplo5(cod int)
+RETURNS departamento AS $$
+	SELECT * FROM departamento WHERE codigo = cod
+$$ LANGUAGE SQL
+
+
+->departamento => retorna todos atributos com as tuplas selecionadas da tabela departamento
+
+*******************************************************************************************
+
+Exemplo 6:
+
+CREATE OR REPLACE FUNCTION exemplo6(sal double precision)
+RETURNS SETOF RECORD AS $$
+	SELECT f.nome, d.nome
+	FROM funcionario f, departamento d
+	WHERE f.codept = d.codigo AND salario > sal
+$$ LANGUAGE SQL
+
+
+SETOF -> retorna varios registros conforme a regra da função
+
+*******************************************************************************************
+
+Exemplo 7: 
+CREATE FUNCTION exemplo7 (out codigo int, out nome text)
+RETUNS RECORD AS $$
+	SELECT codigo, nome FROM funcionario
+$$ LANGUAGE SQL
+	
+
+*retorna o codigo e o nome do primeiro registro de funcionario pelo parametro
+
+*******************************************************************************************
+
+Exemplo 8:
+CREATE FUNCTION exemplo7 (out codigo int, out nome text)
+RETUNS SETOF RECORD AS $$
+	SELECT codigo, nome FROM funcionario
+$$ LANGUAGE SQL
+
+
+*retorna TODOS codigos e os nomes de funcionario pelo parametro
+
+*******************************************************************************************
+
+
+
+
+

@@ -1,0 +1,182 @@
+EXEMPLO 1:
+*Retorne o departamento de um funcionario que possui um determinado código:
+
+create function primeira()
+returns int as
+'select codept 
+from funcionario
+where codigo = 1'
+language sql; 
+
+select primeira()
+
+*************************************************************************
+EXEMPLO 2:
+*Retorne o departamento de um funcionario que possui um determinado codigo
+que deve ser passado como parametro.
+/* or replace -> sobrescreve a função já criada */
+
+create or replace function primeira (cod int)
+returns int as
+'select codept
+from funcionario f
+where f.codigo = cod'
+language sql;
+
+select primeira(1)
+
+*************************************************************************
+EXEMPLO 3:
+*Usando delimitador:
+
+create or replace function primeira ()
+returns int as
+$$ select codept 
+from funcionario
+where nome = 'funcionario4' $$
+language sql;
+
+select primeira()
+
+*************************************************************************
+EXEMPLO 4:
+Usando delimitador e usando parametro:
+
+create or replace function primeira (nome varchar(50))
+returns int as
+$$ select codept
+from funcionario f
+where nome = f.nome $$
+language sql;
+
+select primeira('funcionario3')
+
+*************************************************************************
+EXEMPLO 5:
+Retorna apenas o codigo do primeiro funcionario devido o retorno ser int
+
+create function consulta()
+returns int as
+$$ select codigo
+from funcionario $$
+language sql;
+
+select consulta()
+
+*************************************************************************
+EXEMPLO 6:
+*Retorne o valor de salario do funcionario alterado adicionando taxa:
+
+create function alteraFuncionario (in cod int, in taxa float)
+returns float as
+$$ update funcionario
+set salario = salario + (salario*taxa)/100
+where cod = codigo;
+select salario
+from funcionario 
+where cod = codigo $$
+language sql;
+
+select alteraFuncionario(1, 10)
+
+*************************************************************************
+EXEMPLO 7:
+*Atualiza Funcionario e retorna valor com um texto junto (o valor retornado vai fazer parte do texto)
+
+create function atualizaFuncionario (in cod int, in sal double precision) 
+returns text as
+$$ update funcionario
+set salario = sal
+where codigo = cod;
+select 'Novo Salario: ' || salario
+from funcionario
+where codigo = cod $$
+language sql;
+
+select atualizaFuncionario(3, 3000)
+
+*************************************************************************
+EXEMPLO 8:
+*Remove funcionario e retornar o valor removido, podia ter sido usado o select
+mas como quero retornar apenas o valor removido posso utilizar o returning
+(usado tb para outros, update, insert, delete)
+
+create function removeFuncionario (in cod int)
+returns varchar as
+$$ delete  from funcionario
+where codigo = cod
+returning nome $$
+language sql;
+
+select removeFuncionario(1)
+
+*************************************************************************
+EXEMPLO 9:
+*Retorna mais de um valor, nesse caso todos os valores da tupla departamento
+com o codigo correpondente
+
+create function retornacodept (in cod int)
+returns departamento as
+$$ select * from departamento where cod = codigo $$
+language sql;
+
+select retornacodept (2)
+
+*************************************************************************
+EXEMPLO 9:
+*Retorna o nome do funcionario e do departamento do funcionario com codigo = cod
+
+create or replace function retornacodeptf (in cod int)
+returns record as
+$$ select f.nome, d.nome
+from funcionario f, departamento d
+where f.codept = d.codigo and f.codigo = cod $$
+language sql;
+
+select retornacodeptf(2)
+
+*************************************************************************
+EXEMPLO 10:
+*Função pode retornar um conjunto de valores
+
+create function consulta2()
+returns setof int as
+$$ select codigo from funcionario $$
+language sql;
+
+select consulta2()
+
+*************************************************************************
+EXEMPLO 11:
+*Função pode retornar um conjunto de valores de toda tabela
+
+create function consulta3()
+returns setof funcionario as
+$$ select * from funcionario $$
+language sql;
+
+select consulta3()
+
+*************************************************************************
+EXEMPLO 12:
+*Retorna os nomes dos funcionarios e do departamento dos funcionarios com salario > sal
+
+create function consultadadossal (sal double precision)
+returns setof record as 
+$$ select f.nome, d.nome
+from funcionario f, departamento d
+where f.codept = d.codigo and f.salario > sal $$
+language sql;
+
+select consultadadossal(2000)
+
+*************************************************************************
+EXEMPLO 13:
+*Retorna o codigo e o nome do primeiro registro de funcionario (sando parametro de saída)
+
+create or replace function consultadados (out cod int, out nm varchar(50))
+returns record as
+$$ select codigo, nome from funcionario $$
+language sql;
+
+select consultadados(1, 'funcionario1')

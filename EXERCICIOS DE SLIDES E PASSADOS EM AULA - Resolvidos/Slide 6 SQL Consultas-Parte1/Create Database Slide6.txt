@@ -1,0 +1,274 @@
+/*****************************************************************************************/ 
+BD1 – ACADEMICO
+TABELA CRIADA
+
+create table aluno(
+mat int primary key,
+cpf varchar (12) not null,
+identidade varchar (12) not null,
+nome varchar (50) not null,
+email varchar (50) not null
+)
+
+create table professor(
+codigo int primary key,
+nome varchar (50) not null,
+cpf varchar (12) not null,
+email varchar (50) not null
+)
+
+create table disciplina(
+codigo int primary key,
+nome varchar (50) not null,
+ementa varchar (20) not null
+)
+
+create table turma(
+cod int primary key,
+nome varchar (50) not null,   
+disciplina int not null ,
+professor int not null , 
+	foreign key (disciplina) references disciplina(codigo),
+	foreign key (professor) references professor(codigo)
+)
+
+create table matricula(
+	coda int,
+	codt int,
+	ano int,
+	semestre int,
+	nota int,
+	status varchar(20),
+		check( semestre = 1 or semestre = 2),
+		check( status = 'a' or status = 'r' or status ='c'),
+		foreign key(coda) references aluno(mat),
+		foreign key(codt) references turma(cod)
+)
+
+insert into aluno values
+(2013, '123.151.147', 'MG-18.987', 'Matheus Paula Tejano', 'mat_pektivich@gmail.com'),
+(2014, '122.151.147', 'MG-19.987', 'Maira Jacinto Zuera', 'may_pektivich@gmail.com')
+
+insert into professor values
+(01, 'Carlos Aberto Moraes', '154.326.452', 'caca_25789@hotmail.com'),
+(02, 'Palindo Aberto Moraes', '153.320.452', 'pali_789@hotmail.com')
+
+insert into disciplina values
+(11, 'Matematica', 'Capitulo 1'),
+(12, 'Geografia', 'Capitulo 2')
+
+insert into turma values
+(63, 'TurmaA', 11, 01),
+(64, 'TurmaB', 12, 02)
+
+insert into matricula values
+(2013, 63, 2019, 1, 8, 'a'),
+(2014, 64, 2019, 2, 5, 'c')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*****************************************************************************************/ 
+BD2 – EMPRESA2
+TABELA CRIADA
+
+create table cargo(
+	codigo int primary key,
+	nome varchar(50),
+	descricao varchar(150)
+)
+
+create table departamento(
+	dnome varchar(50),
+	dnumero int primary key,
+	dgerssn int
+)
+
+create table empregado(
+	enome varchar(10),
+	ssn int,
+	datanasc date,
+	endereco varchar(50),
+	dnumero int,
+	codCargo int,
+		primary key(ssn, codCargo),
+			foreign key (codCargo) references cargo(codigo),
+			foreign key (dnumero) references departamento(dnumero)
+)
+
+create table dept_localizacoes (
+	dnumero int,
+	dlocalizacao int,
+		primary key (dnumero, dlocalizacao),
+			foreign key (dnumero) references departamento(dnumero)
+)
+
+create table dependente (
+	codigo int primary key,
+	nome varchar(50),
+	essn int
+)
+
+create table projeto (
+	pnome varchar(50),
+	pnumero int primary key,
+	plocalizacao varchar(50),
+	dnum int,
+		foreign key (dnum) references departamento(dnumero)
+)
+
+create table trabalha_em (
+	codCargo int,
+	ssn int,
+	pnumero int,
+	horas float,
+		primary key (codCargo, ssn, pnumero),
+			foreign key (ssn, codCargo) references empregado(ssn, codCargo),
+			foreign key (pnumero) references projeto(pnumero)
+)
+
+insert into cargo values
+(1, 'Operador', 'Operação nas máquinas'),
+(2, 'Tecnico', 'Manutenção de Máquinas')
+
+insert into departamento values
+('produção', 52, 91),
+('manutenção', 53, 92)
+
+insert into empregado values
+('Joao', 00120, '09-01-1998', 'Teldomiro Santiago', 52, 1),
+('Thales', 00130, '09-01-1990', 'Marildo Santiago', 53, 2)
+
+insert into dept_localizacoes values
+(52, 63),
+(53, 64)
+
+insert into dependente values
+(32, 'Maria Conceicao Seila', 85),
+(33, 'Ana Maria Seila', 86)
+
+insert into projeto values
+('Gerencia de Qualidade de Dados', 46, 'Local2', 52),
+('Gerencia de Qualidade de Dados', 47, 'Local3', 53)
+
+insert into trabalha_em values
+(1, 00120, 46, 6),
+(2, 00130, 47, 7)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*****************************************************************************************/ 
+BD3 – EMPRESA
+TABELA CRIADA
+
+
+create table departamento2 (
+	codigo int primary key,
+	nome varchar(50)
+)
+
+create table funcionario (
+	codigo int primary key,
+	nome varchar(50),
+	identidade int,
+	cpf int,
+	email varchar(50),
+	coddept int,
+		foreign key(coddept) references departamento2(codigo)
+)
+
+create table projeto2(
+	codigo int primary key,
+	nome varchar(50),
+	descricao varchar(50),
+	dattainicial date,
+	datafim date
+)
+
+create table alocacao(
+	codp int,
+	codf int,
+	datai date,
+		primary key(codp,codf),
+		foreign key(codp) references projeto2(codigo),
+		foreign key(codf) references funcionario(codigo)
+)
+
+create table telefone(
+	codf int,
+	numtel varchar(12) primary key,
+		foreign key(codf) references funcionario(codigo)
+)
+
+insert into departamento2 values
+(3, 'Controladoria'),
+(4, 'Informatica')
+
+insert into funcionario values
+(1, 'Matin Luterano', 654544, 654542, 'martin_475@unifei.edu.br', 3),
+(2, 'Pascoal Javalino', 154530, 748369, 'pasc_989@usp.edu.br', 4)
+
+insert into projeto2 values 
+(10, 'Projeto10', 'Alocação de recursos', '10-10-2019', '16-10-2019'),
+(20, 'Projeto20', 'Desaloca Recursos', '11-10-2019', '16-12-2019')
+
+insert into alocacao values
+(10, 1, '10-10-2019'),
+(20, 2, '11-10-2019')
+
+insert into telefone values
+(1, '98414 7536'),
+(2, '98415 0006')

@@ -1,0 +1,46 @@
+VIEW
+
+Elabore uma visão que contenha todos os funcionarios do departamento de codigo 100:
+
+create view fdept100 as 
+(select *
+from funcionario
+where coddept=100)
+
+
+Elabore uma visão que contenha o CPF e o nome dos departamentos de codigo 100
+
+create view fdept100 as
+(select cpf, nome
+from departamenos
+where coddept=100)
+
+***********************************************************************
+
+VIEW MATERIALIZADA -> dados da visão são armazenados no banco
+
+create materialized view telf (funcionario, telefone) as
+select f.nome, t.numtel
+from funcionario f join telt on f.codigo = t.codf	
+
+
+***********************************************************************
+
+drop materialized view 
+
+refresh materialized view 
+
+whit no data -> a view é crada sem dados
+
+***********************************************************************
+
+Quando usar a VIEW ou MATERIALIZED VIEW?
+
+*se os Dados das tabelas são alterados constantemente melhor usar VIEW
+ senão usar a MATERIALIZED VIEW
+
+*VIEW -> melhor para alterações na tabela
+ MATERIALIZED VIEW melhor se utilizar apenas consultas, melhorar performace
+
+*Pode também esconder atributos da tabela do usuário em uma VIEW, 
+ou seja, fazer um select apenas com aquilo que o usuário irá visualizar da tabela original. Por questões de segurança de dados 

@@ -1,0 +1,27 @@
+create trigger nome
+tempo (after, before)
+ON tabela for each (row/statement)
+execute procedure nome_da_função
+
+Os comandos do trigger são executados por uma função especial que retorna um trigger
+
+create function nome_da_função(nao tem paramentro)
+returns trigger () as $$
+---
+$$ language plpgsql (só pode ser plpgsql)
+
+Exemplo:
+
+create or replace function alteraqtdin () returns triger as $$
+begin 
+    update departamento
+    set qtdf = qtdf + 1
+    where codigo = new.dept;
+    return null;
+end;
+
+$$ language plpgsql;        
+
+create trigger alteraqtd
+after insert on funcionario
+for each row execute procedure alteraqtdin();
